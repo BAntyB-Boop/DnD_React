@@ -38,12 +38,27 @@ export interface WorksProps {
 
 const SCROLL_PER_CARD = 60; // vh of scroll per card
 // Cards sit on a vertical cylinder, evenly spaced by arc. Vertical spacing between
-// adjacent cards is RADIUS·sin(STEP) ≈ 654px — slightly LESS than the ~683px card
-// height, so mid-transition the outgoing and incoming cards overlap by a sliver and
-// read as one continuous strip (the original 16:10 cards left a ~270px dead gap
-// between them; the 3:4 portrait cards + tighter step close it — ADR-0023).
-const RADIUS = 1350; // px — cylinder radius (larger = more vertical spacing)
+// adjacent cards is RADIUS·sin(STEP), and RADIUS is derived live from the actual
+// rendered card height (see radiusForCardHeight below) instead of a fixed number —
+// the card is `w-[85vw] max-w-[32rem]` at a 3:4 aspect ratio, so its height changes
+// across breakpoints. Keeping RADIUS matched to that height means the outgoing/
+// incoming cards meet edge-to-edge (no overlap, no gap) at every viewport width,
+// reading as one continuous strip (the original 16:10 cards left a ~270px dead gap
+// between them; the 3:4 portrait cards + matched spacing close it — ADR-0023).
 const STEP = 29; // deg between adjacent cards around the cylinder
+const STEP_RAD = (STEP * Math.PI) / 180;
+const CARD_MAX_WIDTH = 512; // px — matches `max-w-[32rem]`
+const CARD_VW_FRACTION = 0.85; // matches `w-[85vw]`
+const CARD_ASPECT = 4 / 3; // matches `aspect-[3/4]` (height / width)
+
+const cardHeightForViewport = (viewportWidth: number) =>
+  Math.min(viewportWidth * CARD_VW_FRACTION, CARD_MAX_WIDTH) * CARD_ASPECT;
+
+const radiusForCardHeight = (cardHeight: number) => cardHeight / Math.sin(STEP_RAD);
+
+// Desktop-width fallback — used for SSR and the first client paint, before the
+// resize effect below measures the real viewport.
+const DEFAULT_RADIUS = radiusForCardHeight(CARD_MAX_WIDTH * CARD_ASPECT);
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -57,12 +72,12 @@ const backdropFrame = (i: number, v: number) => ({
   transform: `translateY(${(i - v) * 22}%) scale(1.6)`,
 });
 
-const cardFrame = (i: number, v: number) => {
+const cardFrame = (i: number, v: number, radius: number) => {
   const rel = i - v;
-  const rad = (rel * STEP * Math.PI) / 180;
-  const y = RADIUS * Math.sin(rad);
-  const z = RADIUS * Math.cos(rad) - RADIUS; // focus at 0, others recede
-  const d = Math.abs(i - v);
+  const rad = rel * STEP_RAD;
+  const y = radius * Math.sin(rad);
+  const z = radius * Math.cos(rad) - radius; // focus at 0, others recede
+  const d = Math.abs(rel);
   return {
     transform: `translate3d(0px, ${y}px, ${z}px) rotateX(${rel * STEP}deg) translate(-50%, -50%)`,
     opacity: d > 3.6 ? 0 : Math.max(0, 1 - d * 0.24),
@@ -79,10 +94,26 @@ export const Works = ({ content }: WorksProps) => {
   const idxRef = useRef(0);
   const indexElRef = useRef<HTMLSpanElement>(null);
   const nameElRef = useRef<HTMLSpanElement>(null);
+  const radiusRef = useRef(DEFAULT_RADIUS); // recomputed per viewport width below
   // `immediate` — cards follow the manually-smoothed value directly (no spring
   // re-targeting), and nothing calls setState during scroll, so the component never
   // re-renders and the interpolations stay stable → no jitter.
   const [{ f }, api] = useSpring(() => ({ f: 0 }));
+
+  // Re-measure the card's rendered height on mount and on resize, so the cylinder
+  // radius (and therefore inter-card spacing) always matches the real card size at
+  // the current breakpoint — otherwise the fixed-radius spacing only lines up at the
+  // one viewport width it was tuned for, and every other width shows an overlap or a
+  // gap.
+  useEffect(() => {
+    const updateRadius = () => {
+      radiusRef.current = radiusForCardHeight(cardHeightForViewport(window.innerWidth));
+      api.start({ f: currentRef.current, immediate: true });
+    };
+    updateRadius();
+    window.addEventListener("resize", updateRadius);
+    return () => window.removeEventListener("resize", updateRadius);
+  }, [api]);
 
   useEffect(() => {
     const unsubscribe = subscribeToTicker(
@@ -174,8 +205,8 @@ export const Works = ({ content }: WorksProps) => {
               suppressHydrationWarning
               className="absolute left-1/2 top-1/2 aspect-[3/4] w-[85vw] max-w-[32rem] overflow-hidden rounded-3xl bg-card-dark shadow-2xl [backface-visibility:hidden] [will-change:transform]"
               style={{
-                transform: f.to((v) => cardFrame(i, v).transform),
-                opacity: f.to((v) => cardFrame(i, v).opacity),
+                transform: f.to((v) => cardFrame(i, v, radiusRef.current).transform),
+                opacity: f.to((v) => cardFrame(i, v, radiusRef.current).opacity),
               }}
             >
               {/* 3:4 card matches the god portraits' intrinsic 1086×1448 ratio exactly —
