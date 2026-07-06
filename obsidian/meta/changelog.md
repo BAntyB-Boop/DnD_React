@@ -10,6 +10,16 @@ This is a human-curated log — not a mirror of `git log`.
 
 ## 2026-07-06
 
+- **Repo initialized and pushed to GitHub** (`github.com/BAntyB-Boop/DnD_React`, branch
+  `main`). `git init` at the project root; the remote's pre-existing history (one
+  placeholder-README commit) was merged in with `--allow-unrelated-histories -X ours`
+  rather than force-pushed over, so no history was destroyed. Housekeeping in the same
+  commit: removed the stale template `yarn.lock` (npm/`package-lock.json` is this
+  project's package manager), removed the redundant nested `DnD_React/` checkout (its
+  only content — the placeholder README — lives on the same remote), and gitignored
+  `.claude/settings.local.json` (per-machine; the shared hooks in
+  `.claude/settings.json` stay committed).
+
 - **Works cards resized to 3:4 portrait + continuous strip** (see ADR-0023). The
   "Seven of the Drift" scroll-stack no longer shows a ~270px empty gap between cards:
   cards are now `aspect-[3/4] max-w-[32rem]` (matching the god portraits' intrinsic
