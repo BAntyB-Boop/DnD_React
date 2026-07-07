@@ -50,8 +50,19 @@ not passed through `GradientBackgroundColors`.
 
 ## ADR-0023 — Works cards: 16:10 landscape → 3:4 portrait; tighter cylinder step
 
-- **Status:** Accepted
+- **Status:** Accepted (amended 2026-07-07)
 - **Date:** 2026-07-06
+
+> [!note] Amendment (2026-07-07)
+> The fixed `RADIUS = 1350` described below was superseded upstream: the cylinder radius
+> is now **derived live from the rendered card height** (`radiusForCardHeight(
+> cardHeightForViewport(window.innerWidth))`, re-measured on resize), so the outgoing and
+> incoming cards meet edge-to-edge at *every* viewport width instead of only the one
+> width the constant was tuned for. The radius rides in the same react-spring value set
+> as the scroll index (`useSpring(() => ({ f, r }))`, combined via `to([f, r], …)`) —
+> not a ref, because reading `ref.current` inside a render-created interpolation trips
+> the `react-hooks/refs` lint rule. `DEFAULT_RADIUS` (desktop-width) covers SSR/first
+> paint.
 
 **Context.** After the god portraits landed (ADR-0022), the Works section's scroll
 transitions read as broken: between one card leaving and the next arriving there was a

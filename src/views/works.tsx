@@ -13,7 +13,7 @@
 import { useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { animated, useSpring } from "@react-spring/web";
+import { animated, to, useSpring } from "@react-spring/web";
 import { subscribeToTicker } from "@/lib/animation/ticker";
 import { AnimatedHeading } from "@/components/common/animated-heading";
 
@@ -94,11 +94,12 @@ export const Works = ({ content }: WorksProps) => {
   const idxRef = useRef(0);
   const indexElRef = useRef<HTMLSpanElement>(null);
   const nameElRef = useRef<HTMLSpanElement>(null);
-  const radiusRef = useRef(DEFAULT_RADIUS); // recomputed per viewport width below
   // `immediate` — cards follow the manually-smoothed value directly (no spring
   // re-targeting), and nothing calls setState during scroll, so the component never
-  // re-renders and the interpolations stay stable → no jitter.
-  const [{ f }, api] = useSpring(() => ({ f: 0 }));
+  // re-renders and the interpolations stay stable → no jitter. The cylinder radius
+  // `r` rides in the same spring (not a ref — reading a ref inside a render-created
+  // interpolation trips react-hooks/refs) so radius changes re-run the interpolations.
+  const [{ f, r }, api] = useSpring(() => ({ f: 0, r: DEFAULT_RADIUS }));
 
   // Re-measure the card's rendered height on mount and on resize, so the cylinder
   // radius (and therefore inter-card spacing) always matches the real card size at
@@ -107,8 +108,10 @@ export const Works = ({ content }: WorksProps) => {
   // gap.
   useEffect(() => {
     const updateRadius = () => {
-      radiusRef.current = radiusForCardHeight(cardHeightForViewport(window.innerWidth));
-      api.start({ f: currentRef.current, immediate: true });
+      api.start({
+        r: radiusForCardHeight(cardHeightForViewport(window.innerWidth)),
+        immediate: true,
+      });
     };
     updateRadius();
     window.addEventListener("resize", updateRadius);
@@ -205,8 +208,8 @@ export const Works = ({ content }: WorksProps) => {
               suppressHydrationWarning
               className="absolute left-1/2 top-1/2 aspect-[3/4] w-[85vw] max-w-[32rem] overflow-hidden rounded-3xl bg-card-dark shadow-2xl [backface-visibility:hidden] [will-change:transform]"
               style={{
-                transform: f.to((v) => cardFrame(i, v, radiusRef.current).transform),
-                opacity: f.to((v) => cardFrame(i, v, radiusRef.current).opacity),
+                transform: to([f, r], (v, radius) => cardFrame(i, v, radius).transform),
+                opacity: to([f, r], (v, radius) => cardFrame(i, v, radius).opacity),
               }}
             >
               {/* 3:4 card matches the god portraits' intrinsic 1086×1448 ratio exactly —

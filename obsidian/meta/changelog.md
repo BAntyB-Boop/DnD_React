@@ -8,6 +8,17 @@ updated: 2026-07-04
 Chronological log of notable changes to the project. Newest first.
 This is a human-curated log — not a mirror of `git log`.
 
+## 2026-07-07
+
+- **Works cylinder radius derived from real card height + lint fix** (see the ADR-0023
+  amendment). An upstream commit (`847aaca`) replaced the fixed `RADIUS = 1350` with a
+  radius computed from the card's rendered height per viewport width (re-measured on
+  resize), so cards meet edge-to-edge at every breakpoint — but it read the radius from
+  a ref inside a render-created interpolation, failing the `react-hooks/refs` lint rule.
+  Fixed by moving the radius into the same spring as the scroll index
+  (`useSpring(() => ({ f, r }))`, combined via `to([f, r], …)`) — behaviour identical,
+  lint clean. Verified via `next build` + `lint` + a Playwright scroll pass.
+
 ## 2026-07-06
 
 - **Repo initialized and pushed to GitHub** (`github.com/BAntyB-Boop/DnD_React`, branch
