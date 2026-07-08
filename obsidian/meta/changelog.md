@@ -1,12 +1,31 @@
 ---
 tags: [meta, changelog]
-updated: 2026-07-04
+updated: 2026-07-08
 ---
 
 # Changelog
 
 Chronological log of notable changes to the project. Newest first.
 This is a human-curated log — not a mirror of `git log`.
+
+## 2026-07-08
+
+- **/story chapters rebuilt as an Ascent-style pinned timeline** (see ADR-0024). The
+  stacked prose sections are replaced by `views/story-timeline.tsx`: a sticky viewport
+  with a chapter-marker spine scrolling through a conic-ring node (chapter icons
+  cross-fade inside), a split-flap odometer (`01/08`), and a reading panel that swaps
+  the full bilingual chapter prose with a rise spring. Ported from a user-supplied
+  GetLayers "Roadmap Ascent" HTML bundle, converted to springs/tokens per the hard
+  rules; all chapters stay in the DOM for SSR/SEO. `views/story-chapter.tsx` deleted.
+  Header (EN/TH toggle) and closing section unchanged. Chapter illustrations kept: a
+  sharp cross-fading 3:4 portrait card on the desktop right column, the intrinsic-size
+  in-prose figure on mobile, plate/caption line everywhere. Follow-up polish: the
+  Ascent's gold pixel-cube canvas field added back (desktop-only, dimmed to
+  `PIX_ALPHA = 0.2`, clear of the prose column), and the reading panel no longer shows
+  a native scrollbar on short laptops — desktop type is `vh`-clamped so every chapter
+  fits the pinned viewport, with the overflow scrollbar hidden as a last-resort safety
+  net. Verified via `lint` + `next build` + a Playwright scroll pass (desktop EN/TH +
+  1280×765 short-laptop + mobile).
 
 ## 2026-07-07
 

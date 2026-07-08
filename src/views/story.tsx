@@ -1,6 +1,6 @@
 import { SiteNav } from "@/views/site-nav";
 import { StoryHeader } from "@/views/story-header";
-import { StoryChapterSection } from "@/views/story-chapter";
+import { StoryTimeline } from "@/views/story-timeline";
 import { StoryClosingSection } from "@/views/story-closing";
 import { siteNav } from "@/data/mocks/site-nav";
 import type { StoryContent } from "@/data/mocks/story";
@@ -20,13 +20,10 @@ export const StoryView = ({ content }: StoryViewProps) => (
         subtitleTh={content.subtitleTh}
       />
 
-      <div className="mx-auto max-w-3xl pb-24">
-        {content.chapters.map((chapter) => (
-          <StoryChapterSection key={chapter.id} chapter={chapter} />
-        ))}
-        <div className="pt-4">
-          <StoryClosingSection closing={content.closing} />
-        </div>
+      <StoryTimeline chapters={content.chapters} />
+
+      <div className="mx-auto max-w-3xl pb-24 pt-24">
+        <StoryClosingSection closing={content.closing} />
       </div>
     </main>
   </>

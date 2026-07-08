@@ -1,12 +1,76 @@
 ---
 tags: [meta, decision]
-updated: 2026-07-04
+updated: 2026-07-08
 ---
 
 # Decisions Log (ADRs)
 
 Architecture Decision Records. Each entry captures a choice, its context, and its
 consequences. Use [[templates/adr-note]] for new entries. Newest first.
+
+---
+
+## ADR-0024 — /story chapters: stacked prose sections → Ascent-style scroll-pinned timeline
+
+- **Status:** Accepted
+- **Date:** 2026-07-08
+
+**Context.** The user supplied a GetLayers "Roadmap Ascent" source bundle
+(`Downloads/time/roadmap-ascent.html` — a self-contained scroll-pinned HTML/CSS/JS
+section) and asked for the "slide" part of the site to adopt its presentation with the
+existing content unchanged. This was first (mis)applied to the home page's Works card
+stack; the user clarified the target is the **/story page**, so the Works port was
+reverted (never committed) and the same treatment was rebuilt around the chronicle
+chapters instead.
+
+**Decision.** New `views/story-timeline.tsx` (`StoryTimeline`) replaces the stacked
+`StoryChapterSection` list inside `StoryView`. The section pins (sticky) over
+`100 + (count−1)·85vh`; a spine of chapter markers (full `number` on desktop, `roman`
+on mobile) scrolls through a fixed node with a conic progress ring, cross-fading chapter
+icons (first `image` block; the Prologue has none and shows a gold ✦), a split-flap
+odometer (`01/08`), and a reading panel showing the centred chapter's full bilingual
+prose. Rule-compliant conversions from the source HTML, mirroring the earlier Works
+study: `rise`/`bob` keyframes → springs, sin-wave glow → looping duration spring, scroll
+listener → the shared ticker feeding `useSpring({ f, s }, immediate: true)`, hardcoded
+hex → tokens/`color-mix` (chapter `accent` hexes come from data, applied inline — same
+pattern `story-chapter.tsx` used). Two deliberate deviations from the Works/ADR-0023
+pattern, both because chapters are variable-length bilingual block lists:
+- **The active chapter is React state**, set only when the *rounded* index crosses to
+  another chapter (≤ 1 re-render per chapter, never per frame) — ref `textContent`
+  mutation can't swap a block list, and the EN/TH toggle re-renders anyway.
+- **Every chapter stays in the DOM** (`hidden` when not centred) so SSR/SEO keeps the
+  full chronicle text; plate/caption lines from `image` blocks are preserved as a small
+  italic line above the prose.
+The prose container is `overflow-y-auto` with `data-lenis-prevent` (Lenis exemption) as
+a safety net for short viewports, with a bottom mask fade + `pb-10` so the last line
+never sits inside the fade when fully scrolled. To keep that safety net from ever
+*showing* (a native scrollbar appeared mid-panel on ~765px-tall laptops), the desktop
+typography is **viewport-height-clamped** — title `clamp(1.6rem,4.2vh,2.5rem)`, prose
+`clamp(0.8125rem,1.9vh,1rem)`, odometer `clamp(2.75rem,6.5vh,3.75rem)`, block gap
+`clamp(0.65rem,1.6vh,1rem)` — so every chapter fits the pinned viewport, and the
+scrollbar itself is hidden (`scrollbar-width:none` + `::-webkit-scrollbar` hidden). The
+Ascent's **gold pixel-cube canvas field** is also ported here (same seeded `buildPix`/
+`drawPix` drawn in the same ticker callback, colour read from the `--gold` token):
+desktop-only, right 42vw, at `PIX_ALPHA = 0.2` — roughly a third of the home-page
+study's brightness — so it reads as ambience behind the illustration card and never
+competes with the prose.
+
+**Consequences.** `views/story-chapter.tsx` (`StoryChapterSection`) is deleted — the
+timeline renders chapters itself. Chapter illustrations survive in three forms: a
+**sharp 3:4 portrait card on the desktop right column** (cross-fading with the centred
+chapter, accent-tinted border, `aria-hidden` — it duplicates the in-prose figure), the
+**in-prose `<figure>`** (image visible on mobile only via `md:hidden`, its
+plate/caption `figcaption` visible everywhere), plus the node icon and blurred backdrop
+wash. ADR-0019's intrinsic-size/no-crop rule holds on mobile (`width`/`height` from the
+block); the desktop card uses `aspect-[3/4]` + `object-cover object-top`, which is the
+portraits' exact intrinsic ratio, so cropping is nil. `StoryHeader` (with the EN/TH
+toggle) and `StoryClosingSection` are unchanged, before/after the timeline. The home
+page Works card stack is untouched (ADR-0023 still describes it). Verified via `lint` +
+`next build` + a Playwright scroll pass (desktop EN/TH + mobile, no console errors).
+
+## Related
+
+[[decisions-log]] · [[animation-system]] · [[smooth-scroll]] · [[html-semantics]]
 
 ---
 
