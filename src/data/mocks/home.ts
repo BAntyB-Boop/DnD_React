@@ -34,7 +34,9 @@ export const homeContent: HomeContent = {
     sectionLabel: "Hero",
     sceneLabel: "Animated cosmic burst — the Sundering",
     cta: siteNav.cta,
+    ctaHref: siteNav.ctaHref,
     secondaryCta: "Read the Sundering",
+    secondaryCtaHref: "/story",
     insightTitle: "Seven gods, one Sundering.",
     insightBody:
       "One star tore itself into seven lights and a single devouring dark. Now they rule the Drift from Nova Stellare to the Graveyard Belt — worshipped, feared, and sometimes both at once.",

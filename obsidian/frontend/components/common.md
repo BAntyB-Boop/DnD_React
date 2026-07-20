@@ -177,7 +177,8 @@ The shared cascade timing behind `<AnimatedHeading>`, the hand-assembled About h
   static (non-spring) rendering from then on**: ticker-driven spring values reset to 0
   on a re-render after the cascade's ticker unsubscribes (this build's quirk — see
   [[decisions-log]] ADR-0025), so anything still bound to `p` blanks. `<AnimatedHeading>`
-  renders plain spans when finished.
+  renders plain spans when finished; the hero's `revealStyle` returns `undefined`
+  (the hero's stats/insight/CTAs used to vanish right as the intro ended before this).
 
 Reduced motion jumps `p` straight to 1. Generic over the element type (`useRevealCascade<HTMLHeadingElement>()`).
 

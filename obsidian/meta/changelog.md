@@ -1,12 +1,30 @@
 ---
 tags: [meta, changelog]
-updated: 2026-07-08
+updated: 2026-07-20
 ---
 
 # Changelog
 
 Chronological log of notable changes to the project. Newest first.
 This is a human-curated log — not a mirror of `git log`.
+
+## 2026-07-20
+
+- **Hero stats/insight no longer vanish after the intro.** The hero was the last
+  `useRevealCascade` consumer still bound to the spring after the cascade ended — the
+  `finished` state flip re-renders the hero, ticker-driven springs reset to 0 on a
+  re-render after unsubscribe (this build's quirk, same class as the `AnimatedHeading`
+  EN/TH-toggle bug fixed 2026-07-08 / ADR-0025), and the stats row + insight + CTAs
+  snapped back to `opacity: 0`. `revealStyle` now returns `undefined` (static, fully
+  revealed) once `finished` is true, mirroring `AnimatedHeading`. Verified via `lint`
+  + a Playwright pass sampling computed opacity at 1s→10s: stats go 0→1 as the
+  cascade plays and stay 1.
+
+- **Hero CTAs wired to real routes.** The two hero buttons were dead `<a href="#">`
+  placeholders. `HeroContent` gains `ctaHref` / `secondaryCtaHref`, both anchors are
+  now `next/link` `<Link>`s (hard rule 8), and `home.ts` points them at `/pantheon`
+  (`siteNav.ctaHref`) and `/story`. Verified via `lint` + SSR HTML check on the dev
+  server.
 
 ## 2026-07-08
 

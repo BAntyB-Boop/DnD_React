@@ -8,6 +8,7 @@
 // — no canvas resize, so no jank) while the burst spins faster. Driven off scroll via
 // the shared ticker + a react-spring value (ADR-0002). All copy comes from props.
 import { useEffect, useRef } from "react";
+import Link from "next/link";
 import { animated, useSpring } from "@react-spring/web";
 import { subscribeToTicker } from "@/lib/animation/ticker";
 import { PlasmaBurst } from "@/views/plasma-burst";
@@ -29,7 +30,9 @@ export interface HeroContent {
   /** Accessible label for the decorative canvas. */
   sceneLabel: string;
   cta: string;
+  ctaHref: string;
   secondaryCta: string;
+  secondaryCtaHref: string;
   insightTitle: string;
   insightBody: string;
   stats: HeroStat[];
@@ -54,7 +57,9 @@ export const Hero = ({ content }: HeroProps) => {
     sectionLabel,
     sceneLabel,
     cta,
+    ctaHref,
     secondaryCta,
+    secondaryCtaHref,
     insightTitle,
     insightBody,
     stats,
@@ -69,14 +74,24 @@ export const Hero = ({ content }: HeroProps) => {
 
   // Non-heading elements fade/blur/rise in once the preloader releases the hero.
   const preloaderDone = usePreloader((s) => s.done);
-  const { p: rp, localProg: revealProg } = useRevealCascade(HERO_ITEMS, {
-    startWhen: preloaderDone,
-  });
-  const revealStyle = (i: number) => ({
-    opacity: rp.to((v) => revealProg(v, i)),
-    transform: rp.to((v) => `translateY(${REVEAL_RISE * (1 - revealProg(v, i))}px)`),
-    filter: rp.to((v) => `blur(${REVEAL_BLUR * (1 - revealProg(v, i))}px)`),
-  });
+  const {
+    p: rp,
+    localProg: revealProg,
+    finished: revealFinished,
+  } = useRevealCascade(HERO_ITEMS, { startWhen: preloaderDone });
+  // Once the cascade has played, drop the spring bindings — in this build a later
+  // re-render resets ticker-driven springs to 0 (see use-reveal-cascade.ts), which
+  // would blank the stats/insight/CTAs if they stayed bound to `rp`.
+  const revealStyle = (i: number) =>
+    revealFinished
+      ? undefined
+      : {
+          opacity: rp.to((v) => revealProg(v, i)),
+          transform: rp.to(
+            (v) => `translateY(${REVEAL_RISE * (1 - revealProg(v, i))}px)`,
+          ),
+          filter: rp.to((v) => `blur(${REVEAL_BLUR * (1 - revealProg(v, i))}px)`),
+        };
 
   useEffect(() => {
     const unsubscribe = subscribeToTicker(
@@ -163,18 +178,18 @@ export const Hero = ({ content }: HeroProps) => {
                 style={revealStyle(5)}
                 className="mt-16 flex items-center gap-6 [will-change:transform,opacity]"
               >
-                <a
-                  href="#"
+                <Link
+                  href={ctaHref}
                   className="rounded-full bg-white px-6 py-3 text-sm font-medium text-black hover:bg-white/90"
                 >
                   {cta}
-                </a>
-                <a
-                  href="#"
+                </Link>
+                <Link
+                  href={secondaryCtaHref}
                   className="text-sm text-white underline underline-offset-4 hover:text-white/80"
                 >
                   {secondaryCta}
-                </a>
+                </Link>
               </animated.div>
             </div>
           </div>
