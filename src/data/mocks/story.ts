@@ -31,6 +31,8 @@ export interface StoryClosing {
   textEn: string;
   textTh: string;
   cta: { labelEn: string; labelTh: string; href: string };
+  /** Primary CTA into the "Trial of the Seven" mini-game — additive, does not replace `cta`. */
+  gameCta: { labelEn: string; labelTh: string; href: string };
 }
 
 export interface StoryContent {
@@ -363,6 +365,11 @@ export const storyContent: StoryContent = {
       labelEn: "Read Session I",
       labelTh: "อ่าน Session I",
       href: "/sessions/session-1",
+    },
+    gameCta: {
+      labelEn: "Take the Trial of the Seven",
+      labelTh: "เข้าสู่ Trial of the Seven",
+      href: "/story/game",
     },
   },
 };

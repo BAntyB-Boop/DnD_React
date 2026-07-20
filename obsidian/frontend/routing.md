@@ -1,6 +1,6 @@
 ---
 tags: [frontend, stable]
-updated: 2026-07-08
+updated: 2026-07-20
 ---
 
 # Routing
@@ -39,6 +39,7 @@ here on route `/` (see [[ai-agent-guide]] / [[new-page]]).
 | `/story` | `src/app/story/page.tsx` | `views/story.tsx` → `StoryView` |
 | `/pantheon` | `src/app/pantheon/page.tsx` | `views/pantheon.tsx` → `PantheonView` |
 | `/pantheon/[god]` | `src/app/pantheon/[god]/page.tsx` | `views/god.tsx` → `GodView` — SSG via `generateStaticParams` (7 gods), ADR-0025 |
+| `/story/game` | `src/app/story/game/page.tsx` | `views/game.tsx` → `GameView` — "Trial of the Seven" mini-game, client-heavy leaf (`GameShell`); backed by real API routes + a database, not static content. ADR-0026. Reachable only via the `/story` closing CTA, not the primary nav. |
 | `/bestiary`, `/lore/nova-stellare`, `/map/nova-stellare`, `/oneshot/nova-arrival`, `/sessions/session-1` | one `page.tsx` each | `views/coming-soon.tsx` → `ComingSoonView` (stubs) |
 
 ## Special files

@@ -27,13 +27,22 @@ export const StoryClosingSection = ({ closing }: StoryClosingProps) => {
       <p className="max-w-xl text-xl italic text-ink/90">
         {lang === "en" ? closing.textEn : closing.textTh}
       </p>
-      <Link
-        href={closing.cta.href}
-        className="inline-flex items-center gap-2 rounded-full border border-gold/40 px-6 py-3 text-sm text-gold hover:bg-gold hover:text-bg-deep"
-      >
-        {lang === "en" ? closing.cta.labelEn : closing.cta.labelTh}
-        <span aria-hidden="true">→</span>
-      </Link>
+      <div className="flex flex-wrap items-center justify-center gap-4">
+        <Link
+          href={closing.gameCta.href}
+          className="inline-flex items-center gap-2 rounded-full bg-gold px-6 py-3 text-sm font-medium text-bg-deep shadow-sm hover:bg-gold-bright"
+        >
+          {lang === "en" ? closing.gameCta.labelEn : closing.gameCta.labelTh}
+          <span aria-hidden="true">→</span>
+        </Link>
+        <Link
+          href={closing.cta.href}
+          className="inline-flex items-center gap-2 rounded-full border border-gold/40 px-6 py-3 text-sm text-gold hover:bg-gold hover:text-bg-deep"
+        >
+          {lang === "en" ? closing.cta.labelEn : closing.cta.labelTh}
+          <span aria-hidden="true">→</span>
+        </Link>
+      </div>
     </Inview>
   );
 };

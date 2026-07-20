@@ -1,12 +1,14 @@
 ---
 tags: [architecture, stable]
-updated: 2026-05-21
+updated: 2026-07-20
 ---
 
 # Data Flow
 
-How state, scroll position, and animation data move through the app. There is no
-server data layer yet — all "data flow" here is **client-side UI state**.
+How state, scroll position, and animation data move through the app. Most of the
+app is still **client-side UI state** with no server data layer — the one
+exception is `/story/game`, which has a real database behind it (see
+[[backend/database-schema]], ADR-0026) and is called out separately below.
 
 ## Provider hierarchy (fixed order)
 
@@ -109,6 +111,44 @@ app/api/**/route.ts      →  validates (zod) → does the work → { data } | {
 
 Secrets live in unprefixed env vars, read via `getServerEnv()` inside route
 handlers. Full convention: [[api-architecture]].
+
+## Async state in a store — the `/story/game` exception
+
+Every other Zustand store in the app (`useScroll`, `useStoryLanguage`,
+`usePreloader`) holds plain synchronous client state — no store action calls the
+network. `useGameStore` (`src/hooks/use-game-store.ts`) is the first exception:
+its actions (`createPlayer`, `resumeSession`, `submitChoice`, `resetGame`) call
+`apiFetch` directly and track `status`/`error` themselves, so `GameShell` and its
+children stay presentational (per [[component-conventions]], data-fetching logic
+belongs in a hook, never inline in a component).
+
+```
+GameChoiceButton click
+   │
+   ▼
+useGameStore.submitChoice()  →  status: "loading"
+   │
+   ▼
+apiFetch('/api/game/advance')  →  app/api/game/advance/route.ts
+   │
+   ├─ a roll happened  →  hold "loading" for the dice strip's full flicker
+   │                       window, then status: "revealed" + pendingAdvance
+   │                       (scene does NOT change yet — the player must see
+   │                       the landed roll and click Continue)
+   │
+   └─ no roll (auto choice)  →  commit `save`/`phase` immediately
+   │
+   ▼
+confirmAdvance()  →  commits pendingAdvance.nextSave  →  status: "idle"
+```
+
+The "hold, then require confirmation" step exists because the store originally
+committed the next scene the instant the response arrived — on a fast
+(e.g. local) network that regularly beat the dice-roll animation's own
+~750ms flicker, so the roll the player just triggered would be replaced by the
+next scene before they could see it land. Caught during manual browser
+verification of Phase B, not by lint/build/API tests (all of which passed
+regardless, since the bug was purely about UI timing).
 
 ## Hash-link scrolling
 

@@ -1,6 +1,6 @@
 ---
 tags: [frontend, stable]
-updated: 2026-05-21
+updated: 2026-07-20
 ---
 
 # Catalog — Hooks
@@ -34,6 +34,10 @@ components — don't call them directly unless extending the engine.
 |------|------|------|
 | `useWindowWidth` / `useWindowHeight` / `useWindowSize` | `use-window-size.ts` | SSR-safe window dimensions — all three share **one** debounced (300 ms) `resize` listener via a `useSyncExternalStore` store |
 | `useAdaptiveGrid` | `use-adaptive-grid.ts` | Scales the root `<html>` font-size up while the viewport exceeds `baseWidth` — powers `<AdaptiveGrid>`, see [[components/common]] |
+| `useStoryLanguage` | `use-story-language.ts` | Zustand — shared EN/TH toggle for `/story`, `/pantheon`, `/story/game` |
+| `useGameStore` | `use-game-store.ts` | Zustand — `/story/game` state. **First store in the repo whose actions call the network** (`createPlayer`/`resumeSession`/`submitChoice`/`resetGame`/`confirmAdvance` hit `/api/game/*` via `apiFetch`). Redeclares its `GameSaveState` shape rather than importing it from `lib/db/game-repository.ts`, so a server-only module (`better-sqlite3`) can never resolve into the client bundle via a stray non-type import. See [[data-flow]] and ADR-0026. |
+| `useStoryLanguage` | `use-story-language.ts` | Zustand — shared EN/TH toggle for `/story`, `/pantheon`, `/story/game` |
+| `useGameStore` | `use-game-store.ts` | Zustand — `/story/game` state. **First store in the repo whose actions call the network** (`createPlayer`/`resumeSession`/`submitChoice`/`resetGame`/`confirmAdvance` hit `/api/game/*` via `apiFetch`). Redeclares its `GameSaveState` shape rather than importing it from `lib/db/game-repository.ts`, so a server-only module (`better-sqlite3`) can never resolve into the client bundle via a stray non-type import. See [[data-flow]] and ADR-0026. |
 
 > [!note] Shared render loop
 > Loop-based hooks (`useLoop`, `useResizeLoop`, `useLoopInView`, the trigger

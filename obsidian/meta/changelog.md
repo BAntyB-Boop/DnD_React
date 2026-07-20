@@ -10,6 +10,43 @@ This is a human-curated log — not a mirror of `git log`.
 
 ## 2026-07-20
 
+- **`/story/game` client UI landed — "Trial of the Seven" complete (Phase B of 2; see
+  ADR-0026).** Route `src/app/story/game/page.tsx` → `views/game.tsx` (Server Component:
+  `SiteNav` + delegate) → `views/game-shell.tsx` (client leaf, phase switch auth →
+  playing → ending). New views: `game-auth.tsx` (two explicit tabs — begin / resume —
+  client-side validation mirroring the server's zod rules, server errors surfaced
+  inline), `game-scene.tsx` (bilingual scene body + choice list, shows the previous
+  turn's outcome text above the new scene), `game-choice.tsx`, `game-dice-roll.tsx` (the
+  d20 strip — reuses `story-timeline.tsx`'s split-flap digit technique and
+  `use-reveal-cascade.ts`'s `finished`-flag pattern so a landed roll survives an EN/TH
+  toggle), `game-ending.tsx` (cross-references `storyGameContent.endings` + `pantheonContent.gods`
+  by slug — no content duplication). New `src/hooks/use-game-store.ts` — the repo's first
+  Zustand store with async actions; see [[data-flow]]. Wiring: `story.ts`'s
+  `StoryClosing` gained an additive `gameCta` (existing `cta` untouched),
+  `story-closing.tsx` now renders both as primary/secondary buttons, `sitemap.ts` lists
+  `/story/game`. Deliberately **not** added to `site-nav.ts` — reachable only via the
+  `/story` CTA, matching the `/oneshot/nova-arrival` pattern.
+
+  **Bug caught in manual verification, not by lint/build/API tests: the dice roll could
+  resolve before its own ~750ms flicker animation finished playing**, because the store
+  committed the next scene the instant `/api/game/advance` responded — on a fast (local)
+  network this regularly beat the animation, so the roll a player had just triggered was
+  replaced by the next scene before it was visible. Fixed by holding `status: "loading"`
+  for the flicker's remaining duration, then a new `status: "revealed"` + `pendingAdvance`
+  step that requires an explicit "Continue" click before the scene actually advances —
+  `game-scene.tsx` disables sibling choices during this hold. Verified with the fix by
+  screenshotting a full roll sequence at ~200ms intervals (confirms the landed number +
+  DC + success/failure label are genuinely visible, not skipped) and re-confirming the
+  EN/TH-toggle-mid-roll case with the browser open, not just by code review.
+
+  Verified via `lint`, `build` (confirms `/story/game` is a static route, the four
+  `/api/game/*` routes are dynamic, no `any`), and a real headless-browser Playwright
+  pass: full playthrough end-to-end (create → 8 scenes incl. multiple rolls → ending
+  matching the highest-affinity god), resume-from-fresh-session, wrong-passcode and
+  duplicate-name surfaced inline, dice-roll timing (screenshotted through the flicker →
+  reveal → Continue sequence), and EN/TH toggling both mid-flicker and on the
+  revealed/held roll screen (no blank-out).
+
 - **`/story/game` backend landed — "Trial of the Seven" (Phase A of 2; see ADR-0026).**
   The site's first real database. New `src/types/game.ts` (scene/choice/roll/affinity
   types) and `src/data/mocks/story-game.ts` (bilingual content: 1 awakening scene + 7

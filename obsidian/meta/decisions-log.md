@@ -12,7 +12,7 @@ consequences. Use [[templates/adr-note]] for new entries. Newest first.
 
 ## ADR-0026 — `/story/game`: real backend (SQLite + Railway) for "Trial of the Seven"
 
-- **Status:** Accepted (backend landed; client UI in progress — see [[changelog]])
+- **Status:** Accepted — backend and client UI both landed
 - **Date:** 2026-07-20
 
 **Context.** A new feature, "Trial of the Seven," lets a visitor play a choice-based
@@ -52,6 +52,20 @@ the site's first genuine need for a database.
    *player progress* (current scene, affinity, history) lives in the DB. Endings
    cross-reference `pantheon.ts` by `GodSlug` rather than duplicating portrait/epithet
    data, mirroring ADR-0025's `chapterId` cross-reference pattern.
+6. **Client: a Server Component shell around one client leaf, reusing existing patterns
+   over inventing new ones.** `views/game.tsx` (Server Component: `SiteNav` + delegate)
+   → `views/game-shell.tsx` (`"use client"`, phase switch: auth → playing → ending) —
+   hard rule 6 held even though almost the whole page is interactive. The d20 display
+   (`views/game-dice-roll.tsx`) reuses `story-timeline.tsx`'s split-flap digit technique
+   (a ticker-driven spring, not react-spring's self-running animation — ADR-0002/0015)
+   and the same `finished`-flag-then-static-render guard `AnimatedHeading` uses (ADR-0025)
+   so a landed roll doesn't blank on an EN/TH toggle. `useGameStore` (`src/hooks/
+   use-game-store.ts`) is the **first store in the repo with async actions** — see
+   [[data-flow]] for the full request lifecycle, including a timing bug (dice roll
+   resolving before its own flicker animation could play, on fast networks) caught
+   during manual verification and fixed by holding the reveal and requiring an explicit
+   "Continue" once a roll lands, rather than auto-advancing the instant the server
+   responds.
 
 **Consequences.**
 - No migration framework yet — a schema change means hand-editing the DDL (duplicated in
