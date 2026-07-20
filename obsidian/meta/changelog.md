@@ -10,6 +10,18 @@ This is a human-curated log — not a mirror of `git log`.
 
 ## 2026-07-20
 
+- **`/story/game` trial scenes gained a third choice each** (content-only change,
+  `src/data/mocks/story-game.ts` — no engine/DB/API/view changes needed, since
+  `GameScene.choices` was already an arbitrary-length array). Each of the 7 trial
+  scenes now offers: commit to the scene's own god, contest/resist it (the existing
+  roll choice), and a new third "temptation" path that leans toward a different god
+  entirely (e.g. Kestrel's scene gains "turn away from the light" → Ashe/Ren). Raises
+  each scene from 2 to 3 choices per the authoring rule at the top of `story-game.ts`.
+  Endings were already multi-way (7, by highest affinity) before this change — this
+  addresses the separate complaint that each individual turn felt thin. Verified via
+  `lint`, `build`, and a Playwright playthrough confirming all 7 scenes render exactly
+  3 choices and the engine/API resolve the new choice ids with no special-casing.
+
 - **`/story/game` client UI landed — "Trial of the Seven" complete (Phase B of 2; see
   ADR-0026).** Route `src/app/story/game/page.tsx` → `views/game.tsx` (Server Component:
   `SiteNav` + delegate) → `views/game-shell.tsx` (client leaf, phase switch auth →

@@ -3,11 +3,13 @@
 // gods) and pantheon.ts (each god's domain/voice) as the tonal source of
 // truth; do not fork new lore here, only new player-facing scenes.
 //
-// Authoring rule: every trial scene has at least one choice that grants
-// affinity to a god OTHER than that scene's own godSlug (a "doubt" or
-// "temptation" branch) — this keeps the ending from being trivially
-// deterministic by "always pick the scene's own god." See the engine
-// (lib/game/engine.ts) for how affinity totals resolve to an ending.
+// Authoring rule: every trial scene has 3 choices — commit to the scene's own
+// god, contest/resist it (a roll), and a third "temptation" path that leans
+// toward a DIFFERENT god's affinity entirely. At least one choice per scene
+// must grant affinity to a god OTHER than that scene's own godSlug — this
+// keeps the ending from being trivially deterministic by "always pick the
+// scene's own god." See the engine (lib/game/engine.ts) for how affinity
+// totals resolve to an ending.
 
 import type { StoryGameContent } from "@/types/game";
 
@@ -104,6 +106,20 @@ export const storyGameContent: StoryGameContent = {
           },
           nextSceneId: "ozo-marrow",
         },
+        {
+          id: "reject-the-guide",
+          labelEn: "Turn away from the light and find your own way through the dark",
+          labelTh: "หันหลังให้แสงนั้นและหาทางของตัวเองผ่านความมืด",
+          type: "auto",
+          outcome: {
+            narrativeEn:
+              "She doesn't call after you. The dark closes in without her channel to shape it, and for a while you are simply lost — but lost on terms nobody handed you.",
+            narrativeTh:
+              "เธอไม่ได้เรียกตามคุณมา ความมืดปิดล้อมเข้ามาโดยไม่มีช่องทางของเธอคอยกำหนดรูปร่าง สักพักหนึ่งคุณก็แค่หลงทาง แต่เป็นการหลงทางในเงื่อนไขที่ไม่มีใครยัดเยียดให้",
+            affinity: { ashe: 2, "ren-solheim": 1 },
+          },
+          nextSceneId: "ozo-marrow",
+        },
       ],
     },
     {
@@ -158,6 +174,20 @@ export const storyGameContent: StoryGameContent = {
           },
           nextSceneId: "ren-solheim",
         },
+        {
+          id: "ask-the-terms-first",
+          labelEn: "Ask what happens if you lose, before agreeing to anything",
+          labelTh: "ถามก่อนว่าถ้าแพ้จะเกิดอะไรขึ้น ก่อนจะตกลงอะไรทั้งนั้น",
+          type: "auto",
+          outcome: {
+            narrativeEn:
+              "Ozo's grin widens — not offended, delighted. \"Nobody asks that anymore.\" He tells you anyway, half-truth wrapped around half-warning, and lets you decide with open eyes.",
+            narrativeTh:
+              "รอยยิ้มของ Ozo กว้างขึ้น ไม่ใช่ความไม่พอใจ แต่เป็นความปลื้มใจ \"ไม่มีใครถามแบบนั้นแล้วสมัยนี้\" เขาบอกคุณอยู่ดี ครึ่งความจริงห่อหุ้มครึ่งคำเตือน แล้วปล่อยให้คุณตัดสินใจโดยรู้เท่าทัน",
+            affinity: { "mirae-songtide": 2, "ozo-marrow": 1 },
+          },
+          nextSceneId: "ren-solheim",
+        },
       ],
     },
     {
@@ -207,6 +237,20 @@ export const storyGameContent: StoryGameContent = {
                 "พื้นเถ้าถ่านลามเข้าหาความตั้งใจของคุณอยู่ดี ไม่ว่าคุณจะยอมหรือไม่ บางส่วนของตัวตนเก่าลุกเป็นแสงไป Ren มองดูโดยไม่ขอโทษ \"ทุกอย่างตายในที่สุดอยู่แล้ว ฉันแค่มอบความหมายให้มัน\"",
               affinity: { "ren-solheim": 2 },
             },
+          },
+          nextSceneId: "ashe",
+        },
+        {
+          id: "offer-something-else",
+          labelEn: "Offer something else to burn instead — not yourself",
+          labelTh: "เสนอสิ่งอื่นให้เผาแทน ไม่ใช่ตัวคุณเอง",
+          type: "auto",
+          outcome: {
+            narrativeEn:
+              "Ren tilts their head, amused despite themself. \"Everyone tries to bargain, eventually.\" They take what you offer — it is never quite enough, but it is enough for now — and the fire lets you pass.",
+            narrativeTh:
+              "Ren เอียงหัว อดขบขันไม่ได้ทั้งที่ตั้งใจจะไม่รู้สึกแบบนั้น \"ทุกคนพยายามต่อรองในที่สุด\" พวกเขารับสิ่งที่คุณเสนอ มันไม่เคยพอเสียทีเดียว แต่ก็พอสำหรับตอนนี้ แล้วเปลวไฟก็ปล่อยให้คุณผ่านไป",
+            affinity: { "ozo-marrow": 2, "ren-solheim": 1 },
           },
           nextSceneId: "ashe",
         },
@@ -264,6 +308,20 @@ export const storyGameContent: StoryGameContent = {
           },
           nextSceneId: "vahn-duskrail",
         },
+        {
+          id: "demand-an-answer",
+          labelEn: "Ask the synth a direct question and demand it answer",
+          labelTh: "ถาม synth ตรงๆและเรียกร้องให้มันตอบ",
+          type: "auto",
+          outcome: {
+            narrativeEn:
+              "It does not answer. Not out of malice, and not quite out of refusal either — the not-answering feels, the longer you wait, like the only honest response left in a place already emptying of everything else.",
+            narrativeTh:
+              "มันไม่ตอบ ไม่ใช่เพราะมีเจตนาร้าย และก็ไม่ใช่การปฏิเสธเสียทีเดียว การไม่ตอบนั้น ยิ่งคุณรอนานเท่าไหร่ ยิ่งรู้สึกเหมือนเป็นคำตอบที่จริงใจที่สุดที่เหลืออยู่ในที่ที่กำลังว่างเปล่าลงไปเรื่อยๆ",
+            affinity: { "vahn-duskrail": 1, "null": 1 },
+          },
+          nextSceneId: "vahn-duskrail",
+        },
       ],
     },
     {
@@ -315,6 +373,20 @@ export const storyGameContent: StoryGameContent = {
                 "Vahn ไม่กระพริบตาด้วยซ้ำ \"ฐานชายแดนได้ยินคำโกหกมาหมดแล้วทุกแบบ\" เขาไม่ได้ลงโทษคุณ เพียงแต่รอ หอกยังนิ่งอยู่ จนกว่าคุณจะหาความจริงมาพูดแทน",
               affinity: { "vahn-duskrail": 2 },
             },
+          },
+          nextSceneId: "mirae-songtide",
+        },
+        {
+          id: "offer-a-trade",
+          labelEn: "Offer him something in trade for passage instead of a name",
+          labelTh: "เสนอสิ่งของแลกเปลี่ยนแทนการบอกชื่อ",
+          type: "auto",
+          outcome: {
+            narrativeEn:
+              "Vahn looks at what you're offering the way a soldier looks at a bribe he's already decided to refuse. \"Keep it,\" he says. \"But I'll remember you tried instead of lying.\" He steps aside anyway.",
+            narrativeTh:
+              "Vahn มองสิ่งที่คุณเสนอแบบเดียวกับที่ทหารมองสินบนที่เขาตัดสินใจปฏิเสธไว้แล้ว \"เก็บไว้เถอะ\" เขาพูด \"แต่ฉันจะจำไว้ว่าคุณพยายามแทนที่จะโกหก\" เขาก้าวหลบให้ทางอยู่ดี",
+            affinity: { "ozo-marrow": 2, "vahn-duskrail": 1 },
           },
           nextSceneId: "mirae-songtide",
         },
@@ -372,6 +444,20 @@ export const storyGameContent: StoryGameContent = {
           },
           nextSceneId: "null",
         },
+        {
+          id: "ask-for-the-way-not-the-end",
+          labelEn: "Ask her to show you the path, not tell you the ending",
+          labelTh: "ขอให้เธอชี้ทาง ไม่ใช่บอกตอนจบ",
+          type: "auto",
+          outcome: {
+            narrativeEn:
+              "Mirae blinks, genuinely caught off guard. \"Nobody's ever asked for the smaller kindness before.\" She gives you a direction instead of a destination — an old kind of mercy she'd almost forgotten she had.",
+            narrativeTh:
+              "Mirae กะพริบตา ประหลาดใจอย่างแท้จริง \"ไม่เคยมีใครขอความกรุณาเล็กๆแบบนี้มาก่อนเลย\" เธอให้ทิศทางแก่คุณแทนที่จะบอกจุดหมาย ความเมตตาแบบเก่าที่เธอเกือบลืมไปแล้วว่ามีอยู่ในตัว",
+            affinity: { "kestrel-ashvane": 2, "mirae-songtide": 1 },
+          },
+          nextSceneId: "null",
+        },
       ],
     },
     {
@@ -423,6 +509,20 @@ export const storyGameContent: StoryGameContent = {
             narrativeTh:
               "คุณไม่ได้ขอให้มันเป็นอย่างอื่นนอกจากตัวมันเอง บางอย่างในเรื่องนั้น ไม่ใช่ความกลัว ไม่ใช่การท้าทาย เพียงแค่การอยู่เป็นเพื่อน คือสิ่งที่ใกล้เคียงกับความอ่อนโยนที่สุดที่ Null เคยแสดงออกมา",
             affinity: { "ashe": 1, "null": 1 },
+          },
+          nextSceneId: "__ending__",
+        },
+        {
+          id: "offer-yourself-instead",
+          labelEn: "Offer yourself as the next thing it erases, so it stops elsewhere",
+          labelTh: "เสนอตัวเองให้เป็นสิ่งต่อไปที่มันลบเลือน เพื่อให้มันหยุดที่อื่น",
+          type: "auto",
+          outcome: {
+            narrativeEn:
+              "\"That is not currently permitted,\" it says — and for a moment something in the voice sounds almost like it regrets the rule. The charts keep going blank, star by star, but yours is not among them. Not yet.",
+            narrativeTh:
+              "\"นั่นไม่ได้รับอนุญาตในตอนนี้\" มันพูด และชั่วขณะหนึ่งมีบางอย่างในน้ำเสียงนั้นฟังดูเกือบจะเสียใจกับกฎนั้นเอง แผนที่ดาวยังคงว่างเปล่าลงทีละดวง แต่ของคุณไม่ได้อยู่ในนั้น ยังไม่ใช่ตอนนี้",
+            affinity: { "ren-solheim": 2, "null": 1 },
           },
           nextSceneId: "__ending__",
         },
