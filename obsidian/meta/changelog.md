@@ -10,6 +10,13 @@ This is a human-curated log — not a mirror of `git log`.
 
 ## 2026-07-20
 
+- **Claude Code agent team added** (`.claude/agents/`): four project subagents —
+  `planner` (read-only plan design), `researcher` (read-only codebase/vault/web
+  research), `coder` (implements plans; runs lint; doesn't touch `obsidian/`), and
+  `explainer` (explains diffs and owns vault-doc sync; edits `obsidian/**` only).
+  Invoked only on explicit request, not auto-routed. Tooling only — no runtime
+  code affected.
+
 - **Hero stats/insight no longer vanish after the intro.** The hero was the last
   `useRevealCascade` consumer still bound to the spring after the cascade ended — the
   `finished` state flip re-renders the hero, ticker-driven springs reset to 0 on a
