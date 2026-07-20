@@ -1,6 +1,6 @@
 ---
 tags: [backend, api, stable]
-updated: 2026-05-22
+updated: 2026-07-20
 ---
 
 # API Architecture
@@ -86,6 +86,28 @@ Server Components instead (no client request at all).
 `app/api/contact/route.ts` — a contact/lead endpoint. Runs out of the box
 (logs server-side); set `CONTACT_ENDPOINT` to forward leads upstream.
 
+## Second example — a stateful resource (the game)
+
+`app/api/game/{players,session,advance,reset}/route.ts` follow the exact same
+`handle()`/zod/envelope convention above, with two additions worth noting as a
+pattern:
+
+- **Shared zod fragment.** The `name`/`passcode` identity fields are
+  duplicated as a small `identity` object literal at the top of each route
+  file rather than lifted into `src/lib/api/` — per "extract only when it
+  pays," four short lines repeated four times didn't justify a shared module.
+- **Domain errors → `ApiError`, translated in the route.** `src/lib/game/engine.ts`
+  throws typed errors (`SceneNotFoundError`, `ChoiceNotFoundError`) for
+  invariants it can detect; the route catches them and re-throws as
+  `ApiError(400, "invalid_choice", …)` — business logic stays pure/testable,
+  HTTP status mapping stays in the route, per the "the handler owns the work"
+  rule above.
+- **Server-authoritative mutation.** `/api/game/advance` rolls the d20 and
+  resolves the outcome entirely server-side — the client can request a roll
+  but can never supply one; the response, not the request, is what gets
+  persisted. See [[database-schema]] for the DB layer this calls into and
+  ADR-0026 for why this is a security-relevant, non-negotiable choice here.
+
 ## Related
 
-[[backend/README]] · [[environment-variables]] · [[routing]] · [[data-flow]] · [[tech-stack]]
+[[backend/README]] · [[database-schema]] · [[environment-variables]] · [[routing]] · [[data-flow]] · [[tech-stack]]

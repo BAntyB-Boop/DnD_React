@@ -1,6 +1,6 @@
 ---
 tags: [architecture, stable]
-updated: 2026-05-21
+updated: 2026-07-20
 ---
 
 # Tech Stack
@@ -79,6 +79,17 @@ decoder isn't linted.
 
 See [[smooth-scroll]] and [[data-flow]].
 
+## Data / persistence
+
+| Package | Version | Role |
+|---------|---------|------|
+| `better-sqlite3` | `^12.11.1` | Embedded SQLite driver — the `/story/game` feature's save data only. See [[database-schema]]. |
+| `@types/better-sqlite3` | `^7.6.13` | Types (dev). |
+
+Scoped to one feature, not a general project-wide database. `node:crypto`
+(built in, no dependency) handles passcode hashing for the same feature — see
+[[database-schema]].
+
 ## Misc
 
 No miscellaneous runtime dependencies. Cookie consent is an in-house component
@@ -105,9 +116,10 @@ Package manager: **Yarn** (`yarn.lock` is committed).
 
 ## Not yet in the stack
 
-Auth, database/ORM, payments, i18n, data-fetching libraries. The original starter
-spec listed these as "add as needed" placeholders. Document them here when adopted,
-and add an ADR to [[decisions-log]].
+A general-purpose ORM, project-wide auth, payments, i18n, data-fetching
+libraries. (`better-sqlite3` above is intentionally narrow — one feature's
+save data, not a general database.) Document new adoptions here, and add an
+ADR to [[decisions-log]].
 
 ## Related
 

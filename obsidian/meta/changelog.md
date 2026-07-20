@@ -10,6 +10,27 @@ This is a human-curated log — not a mirror of `git log`.
 
 ## 2026-07-20
 
+- **`/story/game` backend landed — "Trial of the Seven" (Phase A of 2; see ADR-0026).**
+  The site's first real database. New `src/types/game.ts` (scene/choice/roll/affinity
+  types) and `src/data/mocks/story-game.ts` (bilingual content: 1 awakening scene + 7
+  god trial scenes, each with ≥1 d20-roll choice and ≥1 "doubt" choice that can grant a
+  *different* god affinity, + 7 endings). New `src/lib/db/` (SQLite via
+  `better-sqlite3`, singleton connection cached on `globalThis` for Turbopack HMR
+  safety, DDL inlined in `client.ts` — see [[database-schema]] for why) and
+  `src/lib/game/engine.ts` (pure resolve-choice logic: server-rolls a d20, merges
+  affinity, resolves the ending by max-affinity + array-order tie-break). New
+  `src/lib/auth/passcode.ts` (scrypt hashing, no new native dependency). Four new API
+  routes, `src/app/api/game/{players,session,advance,reset}/route.ts`, following the
+  existing `handle()`/zod/envelope convention exactly — dice rolls are
+  server-authoritative, never trusted from the client. `src/env.ts` gained
+  `GAME_DB_PATH`; `next.config.ts` gained `serverExternalPackages: ["better-sqlite3"]`;
+  `.gitignore` gained `/data/`. Verified via `lint`, `build` (confirmed the DB driver
+  never reaches the client bundle), and a full manual API playthrough (create/resume/
+  wrong-passcode/duplicate-name/stale-scene/invalid-choice/reset, plus a full 7-scene
+  run validating the tie-break rule). **Phase B (client UI: `/story/game` route, the
+  scene/choice/dice-roll views, the `/story` closing-section CTA, sitemap entry) is not
+  yet built** — this entry covers the backend only.
+
 - **Claude Code agent team added** (`.claude/agents/`): four project subagents —
   `planner` (read-only plan design), `researcher` (read-only codebase/vault/web
   research), `coder` (implements plans; runs lint; doesn't touch `obsidian/`), and

@@ -4,6 +4,14 @@ const nextConfig: NextConfig = {
   // Drop the `X-Powered-By: Next.js` response header.
   poweredByHeader: false,
 
+  // better-sqlite3 ships a native .node binding — keep it out of any bundling
+  // step so the server build references node_modules directly instead of
+  // trying to package the binary. Verified against this Next version's own
+  // config-shared.d.ts (the option's name/location has moved across
+  // versions); functions with or without this in local testing, but it's the
+  // documented way to keep a native dep server-only for production/Railway.
+  serverExternalPackages: ["better-sqlite3"],
+
   compiler: {
     // Strip `console.*` from production bundles, keeping error/warn for
     // monitoring. Left on in dev so logs stay available.

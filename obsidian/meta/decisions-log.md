@@ -1,12 +1,69 @@
 ---
 tags: [meta, decision]
-updated: 2026-07-08
+updated: 2026-07-20
 ---
 
 # Decisions Log (ADRs)
 
 Architecture Decision Records. Each entry captures a choice, its context, and its
 consequences. Use [[templates/adr-note]] for new entries. Newest first.
+
+---
+
+## ADR-0026 — `/story/game`: real backend (SQLite + Railway) for "Trial of the Seven"
+
+- **Status:** Accepted (backend landed; client UI in progress — see [[changelog]])
+- **Date:** 2026-07-20
+
+**Context.** A new feature, "Trial of the Seven," lets a visitor play a choice-based
+interactive-fiction game tied to the site's existing myth (`data/mocks/story.ts`'s
+Sundering + the seven gods in `data/mocks/pantheon.ts`): pick a path through 7 trial
+scenes, some choices resolved by a d20 roll, and land on an ending god by affinity.
+Unlike everything else on the site, this needs to persist state across visits/devices —
+the site's first genuine need for a database.
+
+**Decision.**
+
+1. **Server-authoritative dice rolls.** The d20 roll happens inside `/api/game/advance`,
+   never on the client — a client-supplied roll could trivially be spoofed to force an
+   ending, and the roll directly determines what gets persisted. The client may animate a
+   local flicker for feel but always reconciles to the number the API returns.
+2. **Identity: name + short passcode, not accounts.** A player creates a drifter with a
+   4–6 char alnum passcode (`/api/game/players`), hashed via `node:crypto` scrypt
+   (`src/lib/auth/passcode.ts`) — not bcrypt/argon2, to avoid stacking a second native
+   dependency on top of the DB driver. This is scoped identity for one feature, not a
+   site-wide auth system. See [[database-schema]] for the entropy tradeoff this accepts.
+3. **Database: `better-sqlite3`, validated over the planned `@libsql/client` fallback.**
+   The plan's riskiest unknown — a native module on Windows dev + Turbopack + Next
+   16.2.0 — was spiked first: `better-sqlite3` installed a **prebuilt** binary (no
+   `node-gyp` compile) and ran under both `next dev` and `next build && next start` with
+   only `serverExternalPackages: ["better-sqlite3"]` added to `next.config.ts`. Schema
+   and the swappable repository boundary: [[database-schema]].
+4. **Deployment splits by feature: Railway, not Vercel, for this one route.** A SQLite
+   file needs a persistent, writable filesystem across requests — incompatible with
+   Vercel's serverless runtime. Rather than move the whole site, only `/api/game/**`
+   depends on this: Railway hosts the app with a mounted persistent volume
+   (`GAME_DB_PATH` → the volume path). The rest of the site remains Vercel-deployable in
+   principle. See the deployment note in [[backend/README]]. **Constraint accepted:** a
+   file-based DB means a single Railway instance — no horizontal scaling of this route.
+5. **Content model is data, not database rows.** Scene/choice/ending text
+   (`src/types/game.ts`, `src/data/mocks/story-game.ts`) is authored bilingual (EN/TH)
+   static content, matching the site's existing `data/mocks/<page>.ts` convention — only
+   *player progress* (current scene, affinity, history) lives in the DB. Endings
+   cross-reference `pantheon.ts` by `GodSlug` rather than duplicating portrait/epithet
+   data, mirroring ADR-0025's `chapterId` cross-reference pattern.
+
+**Consequences.**
+- No migration framework yet — a schema change means hand-editing the DDL (duplicated in
+  `client.ts` and `schema.sql`, see [[database-schema]]) and migrating any existing file.
+- No rate limiting yet on `/api/game/session` / `/api/game/advance` — documented
+  follow-up given the passcode's low entropy.
+- `/story/game` is reachable only via a CTA at the end of `/story`, not from the primary
+  site nav (`data/mocks/site-nav.ts`) — matches the existing pattern for one-off
+  experiences like `/oneshot/nova-arrival`. Revisit if discoverability becomes a problem.
+- This is the first feature with genuinely stateful, cross-device server data on the
+  site — future backend work should default to Vercel-native options (e.g. Neon
+  Postgres) unless it has the same persistent-filesystem requirement this one does.
 
 ---
 

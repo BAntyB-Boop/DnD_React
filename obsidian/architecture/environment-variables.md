@@ -1,6 +1,6 @@
 ---
 tags: [architecture, config, stable]
-updated: 2026-05-21
+updated: 2026-07-20
 ---
 
 # Environment Variables
@@ -21,6 +21,7 @@ Rules for handling configuration and secrets.
 |------|-------|---------|
 | `NEXT_PUBLIC_SITE_URL` | public | Site origin (no trailing slash). Drives canonical URLs, OG/Twitter tags, `robots.txt`, `sitemap.xml`, JSON-LD. Falls back to `http://localhost:3000` when unset — **set it in production**. See [[seo-metadata]]. |
 | `CONTACT_ENDPOINT` | server-only | Optional upstream the `/api/contact` route forwards leads to (CRM / webhook). When unset, submissions are logged server-side. See [[api-architecture]]. |
+| `GAME_DB_PATH` | server-only | Optional path to the `/story/game` SQLite file. Defaults to `./data/trial-of-seven.sqlite` (repo-relative) when unset. In production (Railway), set to a path on the mounted persistent volume, e.g. `/data/trial-of-seven.sqlite`. See [[database-schema]]. |
 
 Documented in `.env.example` (committed). Validated by `src/env.ts` (zod):
 `publicEnv` for `NEXT_PUBLIC_*` (safe anywhere), `getServerEnv()` for

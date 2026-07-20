@@ -39,6 +39,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# game DB (SQLite file must never be committed)
+/data/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

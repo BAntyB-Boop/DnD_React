@@ -18,6 +18,8 @@ const publicSchema = z.object({
 const serverSchema = z.object({
   /** Optional upstream the contact endpoint forwards leads to (CRM / webhook). */
   CONTACT_ENDPOINT: z.url().optional(),
+  /** SQLite file path for the game DB — defaults to ./data/trial-of-seven.sqlite when unset. */
+  GAME_DB_PATH: z.string().optional(),
 });
 
 /** Public env — safe to read anywhere (server or client). */
@@ -34,6 +36,7 @@ let cachedServerEnv: z.infer<typeof serverSchema> | undefined;
 export function getServerEnv() {
   cachedServerEnv ??= serverSchema.parse({
     CONTACT_ENDPOINT: process.env.CONTACT_ENDPOINT,
+    GAME_DB_PATH: process.env.GAME_DB_PATH,
   });
   return cachedServerEnv;
 }
