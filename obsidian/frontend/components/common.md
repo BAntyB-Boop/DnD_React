@@ -1,6 +1,6 @@
 ---
 tags: [frontend, stable]
-updated: 2026-07-04
+updated: 2026-07-08
 ---
 
 # Catalog — Common Components
@@ -135,6 +135,11 @@ marketing views (the hero h1 has its own on-mount variant, `views/hero-title.tsx
   it drives one value `p` 0→1 from the shared ticker per frame (`api.start(…,
   immediate:true)`) and each letter derives its opacity/rise/blur from `p`. See
   [[decisions-log]] ADR-0015 and [[text-engine]].
+- **Static after the cascade:** once `useRevealCascade` reports `finished`, letters
+  render as plain spans. Ticker-driven spring values reset to 0 when the component
+  re-renders after the ticker unsubscribes (this build's quirk), so a heading that
+  stayed bound to `p` would blank on any later re-render — e.g. the story/pantheon
+  EN/TH toggle. See [[decisions-log]] ADR-0025.
 - **Wrapping:** letters are inline-block inside inline-block words → words never break;
   headings still wrap at spaces.
 - **A11y / guards:** the tag keeps the full `aria-label` (letters `aria-hidden`); reduced
@@ -161,13 +166,18 @@ The shared cascade timing behind `<AnimatedHeading>`, the hand-assembled About h
 (`views/about.tsx`, which mixes animated letters with **scaling icon chips**), and the
 **bento card reveals** (`views/stats.tsx`, `views/product.tsx` — each card an
 `animated.article` doing opacity + blur + rise). Call with the item count; returns
-`{ p, rootRef, localProg }`:
+`{ p, rootRef, localProg, finished }`:
 
 - `rootRef` — attach to the element to observe; the cascade starts when it scrolls into view.
 - `p` — a react-spring value driven 0→1 from the shared ticker (react-spring's own springs
   don't self-run here — [[decisions-log]] ADR-0015). Read it in animated styles.
 - `localProg(p, i)` — item `i`'s eased (easeOutQuart) 0→1 progress within the staggered
   timeline; derive opacity / translate / blur / scale per item from it.
+- `finished` — true once the cascade has fully played. **Consumers must switch to
+  static (non-spring) rendering from then on**: ticker-driven spring values reset to 0
+  on a re-render after the cascade's ticker unsubscribes (this build's quirk — see
+  [[decisions-log]] ADR-0025), so anything still bound to `p` blanks. `<AnimatedHeading>`
+  renders plain spans when finished.
 
 Reduced motion jumps `p` straight to 1. Generic over the element type (`useRevealCascade<HTMLHeadingElement>()`).
 

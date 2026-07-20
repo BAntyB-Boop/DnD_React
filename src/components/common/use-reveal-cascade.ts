@@ -9,7 +9,7 @@
 // Trigger: by default it starts when the observed `rootRef` element scrolls into view.
 // Pass `{ startWhen }` (a boolean) to instead start when that flag becomes true — used by
 // the hero, which is on-screen behind the preloader rather than scroll-triggered.
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSpring, type SpringValue } from "@react-spring/web";
 import { subscribeToTicker } from "@/lib/animation/ticker";
 
@@ -21,6 +21,14 @@ export interface RevealCascade<T extends HTMLElement = HTMLElement> {
   p: SpringValue<number>;
   rootRef: React.RefObject<T | null>;
   localProg: (v: number, i: number) => number;
+  /**
+   * True once the cascade has fully played. Consumers should render the
+   * revealed state statically from then on: in this project's react-spring
+   * build, a re-render (e.g. a language toggle flipping shared state) resets
+   * ticker-driven spring values to their initial 0 — so anything still bound
+   * to `p` snaps back to invisible after the cascade's ticker unsubscribes.
+   */
+  finished: boolean;
 }
 
 export interface RevealCascadeOptions {
@@ -34,6 +42,7 @@ export function useRevealCascade<T extends HTMLElement = HTMLElement>(
 ): RevealCascade<T> {
   const rootRef = useRef<T>(null);
   const startedRef = useRef(false);
+  const [finished, setFinished] = useState(false);
   const [{ p }, api] = useSpring(() => ({ p: 0 }));
   const gated = options?.startWhen !== undefined;
   const startWhen = options?.startWhen;
@@ -48,6 +57,7 @@ export function useRevealCascade<T extends HTMLElement = HTMLElement>(
       startedRef.current = true;
       if (reduce) {
         api.start({ p: 1, immediate: true });
+        setFinished(true);
         return;
       }
       let t0: number | null = null;
@@ -60,6 +70,7 @@ export function useRevealCascade<T extends HTMLElement = HTMLElement>(
           api.start({ p: t, immediate: true });
           if (t >= 1) {
             done = true;
+            setFinished(true);
             unsubscribe();
           }
         },
@@ -103,5 +114,5 @@ export function useRevealCascade<T extends HTMLElement = HTMLElement>(
     [total, span],
   );
 
-  return { p, rootRef, localProg };
+  return { p, rootRef, localProg, finished };
 }

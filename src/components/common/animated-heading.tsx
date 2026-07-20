@@ -47,7 +47,9 @@ export const AnimatedHeading = ({
     [words],
   );
   // Digit / numeric headings stay static (hook still called — order stable).
-  const { p, rootRef, localProg } = useRevealCascade(hasDigit ? 0 : total);
+  const { p, rootRef, localProg, finished } = useRevealCascade(
+    hasDigit ? 0 : total,
+  );
 
   if (hasDigit) {
     return (
@@ -67,6 +69,21 @@ export const AnimatedHeading = ({
               const i = li;
               li += 1;
               const a = alpha ? alpha(total > 1 ? i / (total - 1) : 0) : 1;
+              // Once the cascade has played, render the revealed state
+              // statically — a later re-render (e.g. the EN/TH toggle) resets
+              // ticker-driven springs to 0 in this build, which would blank
+              // the heading if the letters stayed bound to `p`.
+              if (finished) {
+                return (
+                  <span
+                    key={ci}
+                    className="inline-block"
+                    style={a < 1 ? { opacity: a } : undefined}
+                  >
+                    {ch}
+                  </span>
+                );
+              }
               return (
                 <animated.span
                   key={ci}

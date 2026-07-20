@@ -10,6 +10,17 @@ This is a human-curated log — not a mirror of `git log`.
 
 ## 2026-07-08
 
+- **/pantheon built: roster + 7 SSG per-god detail pages** (see ADR-0025). The
+  Coming-Soon stub is replaced by a card grid of the seven gods (Inview stagger +
+  Hover lift, accent borders) and `/pantheon/[god]` pages (sticky portrait, bilingual
+  domain/symbol/rites facts, origin prose pulled from the god's `story.ts` chapter by
+  `chapterId` — no duplication, prev/next circle nav). New `data/mocks/pantheon.ts`;
+  `sitemap.ts` now lists `/story`, `/pantheon`, and god URLs; ItemList/Person JSON-LD.
+  En route, fixed a latent `AnimatedHeading` bug: ticker-driven springs reset to 0 on
+  re-render in this build, so the EN/TH toggle blanked revealed headings —
+  `use-reveal-cascade` now exposes `finished` and headings render statically after the
+  cascade. Verified via `lint` + `next build` + Playwright (EN/TH, desktop + mobile).
+
 - **/story chapters rebuilt as an Ascent-style pinned timeline** (see ADR-0024). The
   stacked prose sections are replaced by `views/story-timeline.tsx`: a sticky viewport
   with a chapter-marker spine scrolling through a conic-ring node (chapter icons

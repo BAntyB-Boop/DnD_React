@@ -1,6 +1,6 @@
 ---
 tags: [frontend, stable]
-updated: 2026-05-21
+updated: 2026-07-08
 ---
 
 # Routing
@@ -36,6 +36,10 @@ here on route `/` (see [[ai-agent-guide]] / [[new-page]]).
 | Route | File | View |
 |-------|------|------|
 | `/` | `src/app/page.tsx` | `views/home.tsx` → `HomeView` |
+| `/story` | `src/app/story/page.tsx` | `views/story.tsx` → `StoryView` |
+| `/pantheon` | `src/app/pantheon/page.tsx` | `views/pantheon.tsx` → `PantheonView` |
+| `/pantheon/[god]` | `src/app/pantheon/[god]/page.tsx` | `views/god.tsx` → `GodView` — SSG via `generateStaticParams` (7 gods), ADR-0025 |
+| `/bestiary`, `/lore/nova-stellare`, `/map/nova-stellare`, `/oneshot/nova-arrival`, `/sessions/session-1` | one `page.tsx` each | `views/coming-soon.tsx` → `ComingSoonView` (stubs) |
 
 ## Special files
 

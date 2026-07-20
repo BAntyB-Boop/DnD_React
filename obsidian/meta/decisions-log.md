@@ -10,6 +10,55 @@ consequences. Use [[templates/adr-note]] for new entries. Newest first.
 
 ---
 
+## ADR-0025 — /pantheon: Coming-Soon stub → roster + SSG per-god detail pages
+
+- **Status:** Accepted
+- **Date:** 2026-07-08
+
+**Context.** `/pantheon` was the highest-traffic dead end: the nav's first item and the
+home Works "Read the myth" CTA both land there, but it was a `ComingSoonView` stub. All
+raw material already existed (portraits, epithets, accents, and the origin prose in
+`story.ts`).
+
+**Decision.** New `data/mocks/pantheon.ts` (`GodProfile[]`): slug, bilingual epithet/
+blurb/domain/symbol/rites (drafted, user-editable), portrait, accent, and a `chapterId`
+pointing at the god's chapter in `story.ts` — **the origin myth is not duplicated**;
+detail pages pull the chapter prose by id (single source of truth). Routes:
+- `/pantheon` (`views/pantheon.tsx` + `views/pantheon-grid.tsx`) — reuses `StoryHeader`
+  (h1 + shared EN/TH toggle); a 3-col card grid, `<Inview mode="once">` column-staggered
+  reveal + `<Hover>` lift, accent-tinted borders from data (inline style, story-chapter
+  pattern). CTA to `/story` below.
+- `/pantheon/[god]` (`views/god.tsx` + `views/god-details.tsx`) — SSG via
+  `generateStaticParams` (7 pages), per-god `generateMetadata` (portrait as OG image),
+  sticky portrait, facts `<dl>`, the chapter prose (image blocks skipped — the portrait
+  leads the page), prev/next circle navigation.
+- SEO: `ItemList` JSON-LD on the roster, `Person` JSON-LD per god; `sitemap.ts` now
+  lists `/story`, `/pantheon`, and the 7 god URLs (stubs stay out).
+
+**Fix uncovered en route: reveal-cascade reset on re-render.** Toggling EN/TH on a god
+page blanked the `AnimatedHeading` h1. Root cause: in this project's react-spring build,
+ticker-driven spring values (set per-frame via `api.start({ …, immediate: true })`)
+**reset to their initial value when the component re-renders** after the driving ticker
+unsubscribes — the same build quirk ADR-0015 and the Inview/Hover comments dance around.
+`use-reveal-cascade` (components/common — not the protected engine) now exposes a
+`finished` flag, and `AnimatedHeading` renders letters statically once the cascade has
+played. This also fixes the same latent bug on the `/story` header (and anywhere else
+`AnimatedHeading` sits above re-rendering state). Other cascade consumers (hero, About,
+bento) still bind to `p` — apply the `finished` path there if they ever gain
+post-cascade re-renders.
+
+**Consequences.** The pantheon flow is complete: home → roster → god → chronicle. The
+worship-facing copy (domain/symbol/rites) is drafted content awaiting user review, not
+canon. Remaining stubs: `/bestiary`, `/lore/*`, `/map/*`, `/oneshot/*`, `/sessions/*`.
+Verified via `lint` + `next build` (21 static pages) + Playwright (roster + god pages,
+EN/TH toggle, desktop + mobile, no console errors).
+
+## Related
+
+[[decisions-log]] · [[routing]] · [[seo-metadata]] · [[animation-system]]
+
+---
+
 ## ADR-0024 — /story chapters: stacked prose sections → Ascent-style scroll-pinned timeline
 
 - **Status:** Accepted
